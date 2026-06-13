@@ -1,11 +1,12 @@
 
 import agents from "@/modules/agents/server/agents";
+import sessions from "@/modules/sessions/server/sessions";
 import { Hono } from "hono";
 import { handle } from "hono/vercel";
 
 const app = new Hono().basePath("/api");
 
-const routes = app.route("/agents", agents)
+const routes = app.route("/agents", agents).route("/sessions",sessions)
 
 export const GET = handle(app);
 export const POST = handle(app);

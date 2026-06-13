@@ -42,6 +42,8 @@ import { HugeiconsIcon } from "@hugeicons/react";
 import { CircleCheckIcon, Upload01Icon } from "@hugeicons/core-free-icons";
 import { Progress } from "@/components/ui/progress";
 import { useCreateAgent } from "../../hooks/use-create-agent";
+import { useRouter } from "next/navigation";
+import { useAgent } from "../../hooks/use-agent";
 
 // ─────────────────────────────────────────────
 // CONSTANTS
@@ -123,6 +125,7 @@ type FormValues = z.infer<typeof formSchema>;
 export function CreateAgentForm() {
 	const [imageUploading, setImageUploading] = React.useState(false);
     const {mutate,isPending}= useCreateAgent()
+	const router = useRouter()
 	const form = useForm<FormValues>({
 		resolver: zodResolver(formSchema),
 		defaultValues: {
@@ -134,9 +137,9 @@ export function CreateAgentForm() {
 			skills: [],
 		},
 	});
-
+	// const result = data?.[0]?.id ?? ""
 	const selectedSkills = form.watch("skills");
-
+				
 	const toggleSkill = (skill: string) => {
 		const current = form.getValues("skills");
 		const updated = current.includes(skill)
@@ -166,12 +169,15 @@ export function CreateAgentForm() {
 
 	function onSubmit(data: FormValues) {
 		mutate(data,{
-            onSuccess: () => {
+            onSuccess: (agent) => {
                 toast.success("Agent created successfully!");
                 form.reset();
+				
+				router.push(`/agent/${agent.id}`)
+				
             },
             onError: () => {
-                toast.error("Failed to create agent");
+				toast.error("Failed to create agent");
             },
         })
 	}
