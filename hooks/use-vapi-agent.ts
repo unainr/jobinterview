@@ -1,9 +1,17 @@
 "use client";
 
-import { createInterviewAssistant, InterviewAssistantConfig } from "@/lib/assistant";
+import {
+	createInterviewAssistant,
+	InterviewAssistantConfig,
+} from "@/lib/assistant";
 import { getVapi } from "@/lib/vapi";
+import {
+	useCreditsBalance,
+	useSpendCredits,
+} from "@/modules/credits/hooks/use-credits";
 import { useCreateSession } from "@/modules/sessions/hooks/use-create-sessions";
 import { useEffect, useRef, useState } from "react";
+import { toast } from "sonner";
 // CHANGE 1: import updateCallVapiId to save Vapi call ID to DB
 
 type Status = "idle" | "connecting" | "speaking" | "listening" | "thinking";
@@ -17,8 +25,9 @@ export function useVapiAgent(config: InterviewAssistantConfig, id: string) {
 	const [liveAssistantText, setLiveAssistantText] = useState("");
 	const [liveUserText, setLiveUserText] = useState("");
 	const stoppingRef = useRef(false);
-	    const { mutate: createSession } = useCreateSession(); // ✅
-
+	const { mutate: createSession } = useCreateSession(); // ✅
+	const { data: credits } = useCreditsBalance(); // ← add
+	const { mutateAsync: spendCredits } = useSpendCredits(); // ← add
 
 	useEffect(() => {
 		const onCallStart = () => {
@@ -85,6 +94,15 @@ export function useVapiAgent(config: InterviewAssistantConfig, id: string) {
 	}, [vapi]);
 
 	const start = async () => {
+		if ((credits?.balance ?? 0) < 10) {
+			toast.error("You need 10 credits to start a voice interview", {
+				action: {
+					label: "Upgrade plan",
+					onClick: () => (window.location.href = "/billing"),
+				},
+			});
+			return;
+		}
 		setStatus("connecting");
 		setMessages([]);
 
@@ -110,29 +128,39 @@ export function useVapiAgent(config: InterviewAssistantConfig, id: string) {
 		};
 
 		try {
+			// Deduct credits before starting the call
+			try {
+				await spendCredits();
+			} catch (err) {
+				console.error("⚠️ Failed to deduct credits", err);
+				toast.error("Failed to deduct credits. Please try again.");
+				setStatus("idle");
+				return;
+			}
+
 			// CHANGE 3: capture return value — vapi.start() returns the call object
 			// @ts-expect-error
-			const call = await vapi.start(createInterviewAssistant(config), assistantOverrides);
+			const call = await vapi.start(createInterviewAssistant(config),assistantOverrides);
 			// CHANGE 4: save vapiCallId to DB so generateFeedback can fetch transcript
 			// updateCallVapiId(dbRowId, vapiCallId)
-			 if (call?.id) {
-                // ✅ create session with vapiCallId in one shot
-                createSession(
-                    {
-                        agentId:id,          // agent id from URL
-                        isPublicSession: false,
-                        vapiCallId: call.id, // ✅ vapi call id saved immediately
-                    },
-                    {
-                        onSuccess: (data: any) => {
-                            console.log("✅ Session created with vapiCallId:", data.data.id);
-                        },
-                        onError: () => {
-                            console.error("❌ Failed to save session");
-                        },
-                    }
-                );
-            }
+			if (call?.id) {
+				// ✅ create session with vapiCallId in one shot
+				createSession(
+					{
+						agentId: id, // agent id from URL
+						isPublicSession: false,
+						vapiCallId: call.id, // ✅ vapi call id saved immediately
+					},
+					{
+						onSuccess: (data: any) => {
+							console.log("✅ Session created with vapiCallId:", data.data.id);
+						},
+						onError: () => {
+							console.error("❌ Failed to save session");
+						},
+					},
+				);
+			}
 		} catch (err) {
 			console.error("❌ Vapi start error:", err);
 			setStatus("idle");

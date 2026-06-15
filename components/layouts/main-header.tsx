@@ -9,10 +9,11 @@ import { SignInButtonClerk } from "../clerk-sign-button/Sign-in-button";
 import { Menu, X } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { ThemeSwitcher } from "../theme/mode-toggle";
+import { CreditsDisplay } from "./credits-display";
 
 const menuItems = [
   { name: "Home", href: "/" },
-  { name: "Pricing", href: "/pricing" },
+  { name: "Billing", href: "/billing" },
   { name: "Interview", href: "/interview" },
 
 ];
@@ -73,8 +74,12 @@ export function MainHeader() {
             </ul>
           </div>
 
-          {/* RIGHT — theme + separator + cta + mobile toggle */}
+          {/* RIGHT — credits + theme + separator + cta + mobile toggle */}
           <div className="flex items-center gap-2">
+            <div className="hidden lg:block">
+              <CreditsDisplay />
+            </div>
+
             <ThemeSwitcher />
 
             {/* Separator */}
@@ -119,7 +124,8 @@ export function MainHeader() {
                 {item.name}
               </Link>
             ))}
-            <div className="mt-3 flex gap-2 border-t border-white/6 pt-3">
+            <div className="mt-3 flex items-center justify-between gap-2 border-t border-white/6 pt-3">
+              <CreditsDisplay />
               <SignInButtonClerk />
             </div>
           </nav>
