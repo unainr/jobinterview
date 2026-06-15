@@ -122,9 +122,9 @@ type FormValues = z.infer<typeof formSchema>;
 // FORM
 // ─────────────────────────────────────────────
 
-export function CreateAgentForm() {
+export function CreateAgentForm({ onSuccessAction }: { onSuccessAction?: (agentId: string) => void }) {
 	const [imageUploading, setImageUploading] = React.useState(false);
-    const {mutate,isPending}= useCreateAgent()
+	const { mutate, isPending } = useCreateAgent()
 	const router = useRouter()
 	const form = useForm<FormValues>({
 		resolver: zodResolver(formSchema),
@@ -137,9 +137,8 @@ export function CreateAgentForm() {
 			skills: [],
 		},
 	});
-	// const result = data?.[0]?.id ?? ""
 	const selectedSkills = form.watch("skills");
-				
+
 	const toggleSkill = (skill: string) => {
 		const current = form.getValues("skills");
 		const updated = current.includes(skill)
@@ -148,273 +147,261 @@ export function CreateAgentForm() {
 		form.setValue("skills", updated, { shouldValidate: true });
 	};
 
-    const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-            const file = e.target.files?.[0];
-            if (!file) return;
-            setImageUploading(true);
-            try {
-                const url = await ImageUpload(file);
-                if (url) {
-                    form.setValue("avatarUrl", url);
-                    toast.success("Image uploaded");
-                } else {
-                    toast.error("Failed to upload image");
-                }
-            } catch {
-                toast.error("Error uploading image");
-            } finally {
-                setImageUploading(false);
-            }
-        };
+	const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+		const file = e.target.files?.[0];
+		if (!file) return;
+		setImageUploading(true);
+		try {
+			const url = await ImageUpload(file);
+			if (url) {
+				form.setValue("avatarUrl", url);
+				toast.success("Image uploaded");
+			} else {
+				toast.error("Failed to upload image");
+			}
+		} catch {
+			toast.error("Error uploading image");
+		} finally {
+			setImageUploading(false);
+		}
+	};
 
 	function onSubmit(data: FormValues) {
-		mutate(data,{
-            onSuccess: (agent) => {
-                toast.success("Agent created successfully!");
-                form.reset();
-				
-				router.push(`/agent/${agent.id}`)
-				
-            },
-            onError: () => {
+		mutate(data, {
+			onSuccess: (agent) => {
+				toast.success("Agent created successfully!");
+				form.reset();
+				if (onSuccessAction) {
+					onSuccessAction(agent.id);
+				}
+				router.push(`/agent/${agent.id}`);
+			},
+			onError: () => {
 				toast.error("Failed to create agent");
-            },
-        })
+			},
+		})
 	}
 
 	return (
-		<Card className="w-full sm:max-w-lg">
-			<CardHeader>
-				<CardTitle>Create Agent</CardTitle>
-				<CardDescription>
-					Set up your AI interview agent. It will ask questions based on your
-					role and background.
-				</CardDescription>
-			</CardHeader>
- 
-			<CardContent>
-				<form id="create-agent-form" onSubmit={form.handleSubmit(onSubmit)}>
-					<FieldGroup>
- 
-						{/* Agent Name */}
-						<Controller
-							name="name"
-							control={form.control}
-							render={({ field, fieldState }) => (
-								<Field data-invalid={fieldState.invalid}>
-									<FieldLabel htmlFor="agent-name">Agent Name</FieldLabel>
-									<Input
-										{...field}
-										id="agent-name"
-										placeholder="My Frontend Agent"
-										autoComplete="off"
-										aria-invalid={fieldState.invalid}
-									/>
-									{fieldState.invalid && (
-										<FieldError errors={[fieldState.error]} />
-									)}
-								</Field>
-							)}
-						/>
- 
-						{/* Role */}
-						<Controller
-							name="role"
-							control={form.control}
-							render={({ field, fieldState }) => (
-								<Field data-invalid={fieldState.invalid}>
-									<FieldLabel htmlFor="agent-role">Role</FieldLabel>
-									<Input
-										{...field}
-										id="agent-role"
-										placeholder="Frontend Developer"
-										autoComplete="off"
-										aria-invalid={fieldState.invalid}
-									/>
-									<FieldDescription>
-										e.g. Backend Engineer, DevOps Engineer, Full Stack Developer
-									</FieldDescription>
-									{fieldState.invalid && (
-										<FieldError errors={[fieldState.error]} />
-									)}
-								</Field>
-							)}
-						/>
- 
-						{/* Experience Level */}
-						<Controller
-							name="experienceLevel"
-							control={form.control}
-							render={({ field, fieldState }) => (
-								<Field data-invalid={fieldState.invalid}>
-									<FieldLabel htmlFor="experience-level">
-										Experience Level
-									</FieldLabel>
-									<Select onValueChange={field.onChange} value={field.value}>
-										<SelectTrigger
-											id="experience-level"
-											aria-invalid={fieldState.invalid}
-											className="mt-1.5 h-9 text-sm"
-										>
-											<SelectValue placeholder="Choose level" />
-										</SelectTrigger>
-										<SelectContent>
-											{EXPERIENCE_LEVELS.map(({ value, label }) => (
-												<SelectItem key={value} value={value} className="text-sm">
-													{label}
-												</SelectItem>
-											))}
-										</SelectContent>
-									</Select>
-									{fieldState.invalid && (
-										<FieldError errors={[fieldState.error]} />
-									)}
-								</Field>
-							)}
-						/>
- 
-						{/* Avatar URL */}
-						<div className="space-y-2">
-							<label className="text-xs font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-widest">
-								Banner Image
-							</label>
-							<label className="flex items-center gap-3 px-4 py-3 rounded-xl border border-dashed border-zinc-200 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-800 cursor-pointer hover:border-indigo-400 hover:bg-indigo-50/50 dark:hover:bg-indigo-500/5 transition-all group">
-								<div className="w-8 h-8 rounded-lg bg-zinc-100 dark:bg-zinc-700 flex items-center justify-center shrink-0">
-									{imageUploading ? (
-										<Spinner />
-									) : (
-										<HugeiconsIcon icon={Upload01Icon} strokeWidth={2} />
-									)}
-								</div>
-								<div>
-									<p className="text-sm text-zinc-500 group-hover:text-zinc-700 dark:group-hover:text-zinc-300 transition-colors">
-										{imageUploading ? "Uploading…" : "Click to upload banner"}
-									</p>
-									<p className="text-xs text-zinc-400">
-										PNG, JPG, WEBP up to 5MB
-									</p>
-								</div>
-								<Input
-									type="file"
-									accept="image/*"
-									onChange={handleImageUpload}
-									disabled={imageUploading}
-									className="hidden"
-								/>
-							</label>
-							<Controller
-								name="avatarUrl"
-								control={form.control}
-								render={({ field, fieldState }) => (
-									<Field data-invalid={fieldState.invalid}>
-										<Input {...field} type="hidden" />
-										{field.value && (
-											<div className="flex items-center gap-2 text-xs text-emerald-600 dark:text-emerald-400">
-												<HugeiconsIcon icon={CircleCheckIcon} strokeWidth={2} />
+		<div className="w-full flex flex-col h-full pb-4">
+			<form id="create-agent-form" onSubmit={form.handleSubmit(onSubmit)} className="flex-1 space-y-8">
+				<FieldGroup className="space-y-6">
 
-												<span>Banner uploaded</span>
-												<Progress value={100} className="flex-1 h-1" />
-											</div>
-										)}
-										{fieldState.invalid && (
-											<FieldError errors={[fieldState.error]} />
-										)}
-									</Field>
+					{/* Agent Name */}
+					<Controller
+						name="name"
+						control={form.control}
+						render={({ field, fieldState }) => (
+							<Field data-invalid={fieldState.invalid} className="space-y-2">
+								<FieldLabel htmlFor="agent-name" className="font-medium">Agent Name</FieldLabel>
+								<Input
+									{...field}
+									id="agent-name"
+									placeholder="e.g. Senior Frontend Specialist"
+									autoComplete="off"
+									aria-invalid={fieldState.invalid}
+									className="h-10 transition-colors focus-visible:ring-primary/20"
+								/>
+								{fieldState.invalid && (
+									<FieldError errors={[fieldState.error]} />
 								)}
+							</Field>
+						)}
+					/>
+
+					{/* Role */}
+					<Controller
+						name="role"
+						control={form.control}
+						render={({ field, fieldState }) => (
+							<Field data-invalid={fieldState.invalid} className="space-y-2">
+								<FieldLabel htmlFor="agent-role" className="font-medium">Role</FieldLabel>
+								<Input
+									{...field}
+									id="agent-role"
+									placeholder="e.g. Frontend Developer"
+									autoComplete="off"
+									aria-invalid={fieldState.invalid}
+									className="h-10 transition-colors focus-visible:ring-primary/20"
+								/>
+								<FieldDescription className="text-muted-foreground/70 text-xs">
+									Specifying the exact role helps the AI generate more relevant questions.
+								</FieldDescription>
+								{fieldState.invalid && (
+									<FieldError errors={[fieldState.error]} />
+								)}
+							</Field>
+						)}
+					/>
+
+					{/* Experience Level */}
+					<Controller
+						name="experienceLevel"
+						control={form.control}
+						render={({ field, fieldState }) => (
+							<Field data-invalid={fieldState.invalid} className="space-y-2">
+								<FieldLabel htmlFor="experience-level" className="font-medium">
+									Experience Level
+								</FieldLabel>
+								<Select onValueChange={field.onChange} value={field.value}>
+									<SelectTrigger
+										id="experience-level"
+										aria-invalid={fieldState.invalid}
+										className="h-10"
+									>
+										<SelectValue placeholder="Select experience level" />
+									</SelectTrigger>
+									<SelectContent>
+										{EXPERIENCE_LEVELS.map(({ value, label }) => (
+											<SelectItem key={value} value={value}>
+												{label}
+											</SelectItem>
+										))}
+									</SelectContent>
+								</Select>
+								{fieldState.invalid && (
+									<FieldError errors={[fieldState.error]} />
+								)}
+							</Field>
+						)}
+					/>
+
+					{/* Avatar URL */}
+					<div className="space-y-3 pt-2">
+						<label className="text-sm font-medium text-foreground">
+							Banner Image <span className="text-muted-foreground font-normal">(optional)</span>
+						</label>
+						<label className="flex flex-col sm:flex-row items-center gap-4 p-5 rounded-xl border-2 border-dashed border-border bg-muted/20 cursor-pointer hover:border-primary/50 hover:bg-primary/5 transition-all group">
+							<div className="w-12 h-12 rounded-full bg-background border border-border shadow-sm flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform">
+								{imageUploading ? (
+									<Spinner className="text-primary" />
+								) : (
+									<HugeiconsIcon icon={Upload01Icon} strokeWidth={1.5} className="text-muted-foreground group-hover:text-primary transition-colors" />
+								)}
+							</div>
+							<div className="flex flex-col text-center sm:text-left">
+								<p className="text-sm font-medium text-foreground group-hover:text-primary transition-colors">
+									{imageUploading ? "Uploading your banner…" : "Click to upload a banner image"}
+								</p>
+								<p className="text-xs text-muted-foreground mt-0.5">
+									Supports PNG, JPG, WEBP up to 5MB
+								</p>
+							</div>
+							<Input
+								type="file"
+								accept="image/*"
+								onChange={handleImageUpload}
+								disabled={imageUploading}
+								className="hidden"
 							/>
-						</div>
- 
-						{/* Skills */}
+						</label>
 						<Controller
-							name="skills"
-							control={form.control}
-							render={({ fieldState }) => (
-								<Field data-invalid={fieldState.invalid}>
-									<FieldLabel>Skills</FieldLabel>
-									<FieldDescription>
-										Pick the technologies relevant to your role.
-									</FieldDescription>
-									<div className="mt-2 flex flex-wrap gap-2">
-										{SKILLS_LIST.map((skill) => {
-											const isSelected = selectedSkills.includes(skill);
-											return (
-												<button
-													key={skill}
-													type="button"
-													onClick={() => toggleSkill(skill)}
-													className={`px-3 py-1 rounded-full text-xs font-medium border transition-all ${
-														isSelected
-															? "bg-primary text-primary-foreground border-primary"
-															: "bg-transparent text-muted-foreground border-border hover:border-primary/50 hover:text-foreground"
-													}`}
-												>
-													{skill}
-												</button>
-											);
-										})}
-									</div>
-									{fieldState.invalid && (
-										<FieldError errors={[fieldState.error]} />
-									)}
-								</Field>
-							)}
-						/>
- 
-						{/* About Me */}
-						<Controller
-							name="aboutMe"
+							name="avatarUrl"
 							control={form.control}
 							render={({ field, fieldState }) => (
 								<Field data-invalid={fieldState.invalid}>
-									<FieldLabel htmlFor="about-me">
-										About Me{" "}
-										<span className="text-muted-foreground font-normal">
-											(optional)
-										</span>
-									</FieldLabel>
-									<InputGroup>
-										<InputGroupTextarea
-											{...field}
-											id="about-me"
-											placeholder="e.g. 3 years building React apps, worked at a fintech startup, led a team of 4..."
-											rows={4}
-											className="min-h-20 resize-none text-sm"
-											aria-invalid={fieldState.invalid}
-										/>
-										<InputGroupAddon align="block-end">
-											<InputGroupText className="tabular-nums text-xs">
-												{(field.value ?? "").length}/300
-											</InputGroupText>
-										</InputGroupAddon>
-									</InputGroup>
-									<FieldDescription>
-										Give the AI context about your background so it asks better
-										questions.
-									</FieldDescription>
+									<Input {...field} type="hidden" />
+									{field.value && (
+										<div className="flex items-center gap-2 mt-2 px-3 py-2 rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-xs text-emerald-600 dark:text-emerald-400 font-medium">
+											<HugeiconsIcon icon={CircleCheckIcon} strokeWidth={2} size={16} />
+											<span>Banner uploaded successfully</span>
+										</div>
+									)}
 									{fieldState.invalid && (
 										<FieldError errors={[fieldState.error]} />
 									)}
 								</Field>
 							)}
 						/>
- 
-					</FieldGroup>
-				</form>
-			</CardContent>
- 
-			<CardFooter>
-				<Field orientation="horizontal">
-					<Button type="button" variant="outline" onClick={() => form.reset()}>
-						Reset
-					</Button>
-					<Button disabled={isPending || imageUploading} type="submit" form="create-agent-form">
-						{
-                            
-                            isPending?<><Spinner /> Creating...</>:<>Create</>
-                    }
-					</Button>
-				</Field>
-			</CardFooter>
-		</Card>
+					</div>
+
+					{/* Skills */}
+					<Controller
+						name="skills"
+						control={form.control}
+						render={({ fieldState }) => (
+							<Field data-invalid={fieldState.invalid} className="space-y-3 pt-2">
+								<FieldLabel className="font-medium">Core Skills</FieldLabel>
+								<FieldDescription className="text-muted-foreground/70 text-xs">
+									Select the technologies you want the AI to focus on during the interview.
+								</FieldDescription>
+								<div className="flex flex-wrap gap-2 pt-1">
+									{SKILLS_LIST.map((skill) => {
+										const isSelected = selectedSkills.includes(skill);
+										return (
+											<button
+												key={skill}
+												type="button"
+												onClick={() => toggleSkill(skill)}
+												className={`px-3.5 py-1.5 rounded-full text-xs font-medium border transition-all duration-200 ${
+													isSelected
+														? "bg-primary text-primary-foreground border-primary shadow-sm"
+														: "bg-muted/30 text-muted-foreground border-border hover:border-primary/40 hover:text-foreground hover:bg-muted/60"
+												}`}
+											>
+												{skill}
+											</button>
+										);
+									})}
+								</div>
+								{fieldState.invalid && (
+									<FieldError errors={[fieldState.error]} />
+								)}
+							</Field>
+						)}
+					/>
+
+					{/* About Me */}
+					<Controller
+						name="aboutMe"
+						control={form.control}
+						render={({ field, fieldState }) => (
+							<Field data-invalid={fieldState.invalid} className="space-y-2 pt-2">
+								<FieldLabel htmlFor="about-me" className="font-medium">
+									About Me <span className="text-muted-foreground font-normal">(optional)</span>
+								</FieldLabel>
+								<InputGroup>
+									<InputGroupTextarea
+										{...field}
+										id="about-me"
+										placeholder="e.g. I have 3 years of experience building React applications. I recently worked at a fintech startup..."
+										rows={4}
+										className="min-h-[100px] resize-none p-3 transition-colors focus-visible:ring-primary/20"
+										aria-invalid={fieldState.invalid}
+									/>
+									<InputGroupAddon align="block-end">
+										<InputGroupText className="tabular-nums text-xs text-muted-foreground/50">
+											{(field.value ?? "").length}/300
+										</InputGroupText>
+									</InputGroupAddon>
+								</InputGroup>
+								<FieldDescription className="text-muted-foreground/70 text-xs">
+									Provide brief context about your background so the AI can ask more personalized questions.
+								</FieldDescription>
+								{fieldState.invalid && (
+									<FieldError errors={[fieldState.error]} />
+								)}
+							</Field>
+						)}
+					/>
+
+				</FieldGroup>
+			</form>
+
+			<div className="mt-8 pt-6 border-t border-border flex items-center justify-end gap-3 sticky bottom-0 bg-background/95 backdrop-blur z-10">
+				<Button type="button" variant="ghost" onClick={() => form.reset()} className="px-6">
+					Clear
+				</Button>
+				<Button disabled={isPending || imageUploading} type="submit" form="create-agent-form" className="px-8 shadow-sm">
+					{isPending ? (
+						<>
+							<Spinner className="mr-2" /> Creating...
+						</>
+					) : (
+						<>Create Agent</>
+					)}
+				</Button>
+			</div>
+		</div>
 	);
 }

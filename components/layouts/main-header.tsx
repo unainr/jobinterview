@@ -13,6 +13,8 @@ import { ThemeSwitcher } from "../theme/mode-toggle";
 const menuItems = [
   { name: "Home", href: "/" },
   { name: "Pricing", href: "/pricing" },
+  { name: "Interview", href: "/interview" },
+
 ];
 
 export function MainHeader() {
