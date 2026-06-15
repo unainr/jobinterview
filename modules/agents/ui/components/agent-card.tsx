@@ -35,9 +35,9 @@ export default function AgentCard() {
 
 	if (isError || !agent) {
 		return (
-			<div className="min-h-screen bg-zinc-950 flex flex-col items-center justify-center text-center px-4">
-				<p className="text-zinc-300 text-sm font-medium">Agent not found</p>
-				<p className="text-zinc-600 text-xs mt-1 mb-6">
+			<div className="min-h-[50vh] bg-background flex flex-col items-center justify-center text-center px-4 rounded-xl border border-dashed border-border mt-8">
+				<p className="text-foreground text-base font-semibold">Agent not found</p>
+				<p className="text-muted-foreground text-sm mt-1 mb-6">
 					This agent doesn't exist or you don't have access.
 				</p>
 				<Button asChild size="sm" variant="outline">
@@ -48,111 +48,89 @@ export default function AgentCard() {
 	}
 
 	return (
-		<div className="flex min-h-screen bg-zinc-950 text-zinc-100">
+		<div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
             {
                 agent.map((agent) => (
-                    	<div key={agent.id} className="max-w-2xl mx-auto px-4 py-12">
-				{/* Back */}
-				<Link
-					href="/agent"
-					className="inline-flex items-center gap-1.5 text-xs text-zinc-500 hover:text-zinc-300 transition-colors mb-8"
-				>
-					<HugeiconsIcon icon={ArrowLeft01Icon} size={14} strokeWidth={2} />
-					All agents
-				</Link>
+                    <div key={agent.id} className="flex flex-col bg-card border border-border rounded-2xl overflow-hidden hover:border-primary/50 hover:shadow-md transition-all">
+						{/* Banner */}
+						{agent.avatarUrl ? (
+							<div className="w-full h-32 relative">
+								<Image 
+                                    fill
+									src={agent.avatarUrl}
+									alt={agent.name}
+									className="object-cover"
+								/>
+							</div>
+						) : (
+							<div className="w-full h-32 bg-muted" />
+						)}
 
-				{/* Banner */}
-				{agent.avatarUrl && (
-					<div className="w-full h-40 rounded-2xl overflow-hidden border border-zinc-800 mb-6">
-						<Image width={900} height={900}
-							src={agent.avatarUrl}
-							alt={agent.name}
-							className="w-full h-full object-cover"
-						/>
-					</div>
-				)}
+						{/* Content */}
+						<div className="flex flex-col flex-1 p-6 relative">
+							{/* Avatar */}
+							{agent.avatarUrl ? (
+								<Image 
+                                    width={48} 
+                                    height={48}
+									src={agent.avatarUrl}
+									alt={agent.name}
+									className="w-12 h-12 rounded-xl object-cover border border-border absolute -top-6 left-6 ring-4 ring-card bg-card"
+								/>
+							) : (
+								<div className="w-12 h-12 rounded-xl bg-muted border border-border flex items-center justify-center absolute -top-6 left-6 ring-4 ring-card">
+									<HugeiconsIcon icon={UserIcon} size={20} strokeWidth={1.5} className="text-muted-foreground" />
+								</div>
+							)}
 
-				{/* Header */}
-				<div className="flex items-start gap-4 mb-8">
-					{agent.avatarUrl ? (
-						<Image width={800} height={800}
-							src={agent.avatarUrl}
-							alt={agent.name}
-							className="w-14 h-14 rounded-xl object-cover border border-zinc-700 shrink-0 -mt-8 ml-4 ring-4 ring-zinc-950"
-						/>
-					) : (
-						<div className="w-14 h-14 rounded-xl bg-zinc-800 border border-zinc-700 flex items-center justify-center shrink-0">
-							<HugeiconsIcon icon={UserIcon} size={24} strokeWidth={1.5} className="text-zinc-500" />
-						</div>
-					)}
-					<div className="min-w-0 pt-1">
-						<h1 className="text-xl font-semibold tracking-tight truncate">
-							{agent.name}
-						</h1>
-						<p className="text-sm text-zinc-500 mt-0.5">{agent.role}</p>
-					</div>
-				</div>
+							<div className="mt-4 flex-1">
+								<h2 className="text-xl font-semibold tracking-tight text-card-foreground line-clamp-1">
+									{agent.name}
+								</h2>
+								<p className="text-sm text-muted-foreground mt-1 line-clamp-1">{agent.role}</p>
 
-				{/* Details card */}
-				<div className="rounded-2xl border border-zinc-800 bg-zinc-900 divide-y divide-zinc-800">
-					{/* Experience */}
-					<div className="px-5 py-4 flex items-center justify-between">
-						<span className="text-xs text-zinc-500 uppercase tracking-widest font-medium">
-							Experience
-						</span>
-						<span
-							className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium border ${
-								EXPERIENCE_COLORS[agent.experienceLevel]
-							}`}
-						>
-							{EXPERIENCE_LABELS[agent.experienceLevel]}
-						</span>
-					</div>
-
-					{/* Skills */}
-					{agent.skills && agent.skills.length > 0 && (
-						<div className="px-5 py-4">
-							<span className="text-xs text-zinc-500 uppercase tracking-widest font-medium block mb-3">
-								Skills
-							</span>
-							<div className="flex flex-wrap gap-2">
-								{agent.skills.map((skill) => (
+								{/* Experience Badge */}
+								<div className="mt-4">
 									<span
-										key={skill}
-										className="px-2.5 py-1 rounded-lg text-xs bg-zinc-800 border border-zinc-700 text-zinc-300"
+										className={`inline-flex items-center px-2 py-0.5 rounded text-[10px] font-medium border uppercase tracking-wider ${
+											EXPERIENCE_COLORS[agent.experienceLevel]
+										}`}
 									>
-										{skill}
+										{EXPERIENCE_LABELS[agent.experienceLevel]}
 									</span>
-								))}
+								</div>
+
+								{/* Skills */}
+								{agent.skills && agent.skills.length > 0 && (
+									<div className="flex flex-wrap gap-1.5 mt-4">
+										{agent.skills.slice(0, 3).map((skill) => (
+											<span
+												key={skill}
+												className="px-2 py-1 rounded-md text-xs bg-muted/50 border border-border/50 text-muted-foreground"
+											>
+												{skill}
+											</span>
+										))}
+										{agent.skills.length > 3 && (
+											<span className="px-2 py-1 rounded-md text-xs bg-muted/50 border border-border/50 text-muted-foreground/70">
+												+{agent.skills.length - 3}
+											</span>
+										)}
+									</div>
+								)}
+							</div>
+
+							<div className="mt-6 pt-6 border-t border-border/50">
+								<Button asChild className="w-full font-medium" variant="secondary">
+                                    <Link href={`/agent/${agent.id}`}>
+                                        Start Interview
+                                    </Link>
+								</Button>
 							</div>
 						</div>
-					)}
-
-					{/* About */}
-					{agent.aboutMe && (
-						<div className="px-5 py-4">
-							<span className="text-xs text-zinc-500 uppercase tracking-widest font-medium block mb-2">
-								About
-							</span>
-							<p className="text-sm text-zinc-400 leading-relaxed">
-								{agent.aboutMe}
-							</p>
-						</div>
-					)}
-				</div>
-
-				{/* Start interview CTA */}
-				<div className="mt-6">
-               <Link href={`/agent/${agent.id}`}>
-					<Button className="w-full" size="lg">
-						Start Interview
-					</Button>
-                </Link>
-				</div>
-			</div>
+					</div>
                 ))
             }
-		
 		</div>
 	);
 }

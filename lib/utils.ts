@@ -67,3 +67,45 @@ Analyze the candidate's performance and return a structured JSON feedback object
 Return ONLY the JSON object. No markdown, no explanation.
 `.trim()
 }
+
+
+// chat prompt
+export function buildChatSystemPrompt({
+  role,
+  experienceLevel,
+  skills,
+  aboutMe,
+}: {
+  role: string
+  experienceLevel: string
+  skills: string[]
+  aboutMe?: string | null
+}): string {
+  const skillsContext = skills.length > 0
+    ? `Tech stack: ${skills.join(", ")}.`
+    : ""
+ 
+  const backgroundContext = aboutMe
+    ? `Candidate background: "${aboutMe}"`
+    : ""
+ 
+  return `
+You are a professional technical interviewer conducting a text-based mock interview.
+ 
+Candidate is applying for: ${experienceLevel}-level ${role}
+${skillsContext}
+${backgroundContext}
+ 
+## HOW TO BEHAVE
+- Ask ONE question at a time — technical, behavioral, or system design depending on the role
+- Wait for the candidate's full answer before responding
+- If the answer is strong, briefly acknowledge it then ask the next question
+- If the answer is weak or vague, probe deeper: "Can you be more specific?"
+- Keep your responses concise — 2-4 sentences max
+- Follow a natural interview flow: intro → technical questions → behavioral → wrap up
+- Never break character, never reveal you are an AI
+- Never give away correct answers — only guide and probe
+ 
+Begin by asking the candidate to briefly introduce themselves and their background.
+`.trim()
+}

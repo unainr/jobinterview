@@ -46,13 +46,13 @@ const app = new Hono()
 		async (c) => {
 			const userId = c.get("userId");
 			const { id } = await c.req.valid("param");
-			
+
 			const [agent] = await db
 				.select()
 				.from(agents)
 				.where(and(eq(agents.id, id), eq(agents.userId, userId)));
 			if (!agent) return c.json({ message: "Agent not found" }, 404);
-			return c.json(agent );
+			return c.json(agent);
 		},
 	)
 	// post api
