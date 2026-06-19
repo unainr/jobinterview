@@ -92,29 +92,9 @@ export default function BillingView() {
   }, [searchParams, qc, router])
 
   return (
-    <div className="max-w-4xl mx-auto px-4 py-10 space-y-8">
+    <div className="max-w-full mx-auto px-4 my-20 space-y-8">
 
-      {/* current balance */}
-      <Card className="p-6 flex items-center justify-between flex-wrap gap-4">
-        <div className="flex items-center gap-3">
-          <div className="size-10 rounded-lg bg-primary/10 flex items-center justify-center">
-            <Coins size={18} className="text-primary" />
-          </div>
-          <div>
-            <p className="text-sm text-muted-foreground">Current balance</p>
-            {balanceLoading ? (
-              <Skeleton className="h-7 w-24 mt-1" />
-            ) : (
-              <p className="text-2xl font-semibold">{credits?.balance} credits</p>
-            )}
-          </div>
-        </div>
-        {!balanceLoading && (
-          <Badge variant="secondary" className="text-sm">
-            {PLANS[currentPlan].label} Plan
-          </Badge>
-        )}
-      </Card>
+     
 
       {/* usage note */}
       <p className="text-sm text-muted-foreground">
