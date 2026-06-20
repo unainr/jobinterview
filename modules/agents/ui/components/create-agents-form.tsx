@@ -392,7 +392,7 @@ export function CreateAgentForm({ onSuccessAction }: { onSuccessAction?: (agentI
 				<Button type="button" variant="ghost" onClick={() => form.reset()} className="px-6">
 					Clear
 				</Button>
-				<Button disabled={isPending || imageUploading} type="submit" form="create-agent-form" className="px-8 shadow-sm">
+				<Button variant={'primary'} disabled={isPending || imageUploading} type="submit" form="create-agent-form" className="px-8 shadow-sm">
 					{isPending ? (
 						<>
 							<Spinner className="mr-2" /> Creating...
