@@ -1,6 +1,8 @@
 "use client";
 
+import { Button } from "@/components/ui/button";
 import { Menu } from "lucide-react";
+import Link from "next/link";
 import { useCallback, useEffect, useRef, useState } from "react";
 
 const BG_IMAGE_1 = "https://ik.imagekit.io/wbj1yk2cr/shoes/rt.jpeg";
@@ -210,12 +212,14 @@ export default function RevealHero() {
               driven by advanced AI. Practice with tailored questions, get
               real-time feedback, and land your dream job with confidence.
             </p>
-            <button
+            <Link href="/interview">
+            <Button
               type="button"
               className="bg-[#c8d92e] hover:bg-[#b5c528] text-[#161510] text-sm sm:text-base font-semibold px-8 py-3.5 rounded-full transition-all hover:scale-[1.03] active:scale-95 shadow-lg shadow-[#c8d92e]/10 hover:shadow-[#c8d92e]/30"
             >
               Start Practicing
-            </button>
+            </Button>
+            </Link>
           </div>
         </div>
       </section>

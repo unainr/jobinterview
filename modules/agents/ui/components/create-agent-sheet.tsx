@@ -19,7 +19,7 @@ export function CreateAgentSheet() {
   return (
     <Sheet open={open} onOpenChange={setOpen}>
       <SheetTrigger asChild>
-        <Button className="gap-2">
+        <Button variant={'primary'} className="gap-2">
           <PlusIcon className="size-4" />
           Create Agent
         </Button>
