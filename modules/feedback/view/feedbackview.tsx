@@ -223,12 +223,7 @@ const FeedBackView = () => {
 
           <GenerateFeedbackButton sessionId={call.id} vapiCallId={call.vapiCallId!} />
 
-          <Link
-            href="/dashboard"
-            className="text-[12px] text-[#161510]/40 dark:text-white/40 hover:text-[#161510]/70 dark:hover:text-white/65 transition-colors"
-          >
-            Skip → Dashboard
-          </Link>
+         
         </div>
       </main>
     )
