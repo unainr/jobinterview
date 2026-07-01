@@ -14,6 +14,7 @@ import {
 } from "lucide-react"
 import { useGetSession } from "@/modules/sessions/hooks/use-get-session"
 import { GenerateFeedbackButton } from "@/modules/agents/ui/components/generate-feedback"
+import { RecordingPlayer } from "@/modules/agents/ui/components/recording-player"
 
 // ─────────────────────────────────────────────
 // TYPES — matches the actual AI feedback route output
@@ -286,17 +287,8 @@ const FeedBackView = () => {
         )}
 
         {/* recording */}
-        {call.recordingUrl && (
-          <div className={card}>
-            <div className="flex items-center gap-2 mb-3">
-              <Volume2Icon className="size-3.5 text-[#161510]/35 dark:text-white/40" />
-              <p className="text-[10px] font-semibold uppercase tracking-widest text-[#161510]/40 dark:text-white/40">
-                Call Recording
-              </p>
-            </div>
-            <audio controls src={call.recordingUrl} className="w-full h-10" style={{ accentColor: "#c8d92e" }} />
-          </div>
-        )}
+        {/* recording — gated on vapiCallId (permanent), not recordingUrl (expires) */}
+{call.vapiCallId && <RecordingPlayer sessionId={call.id} />}
 
         {feedback ? (
           <>
