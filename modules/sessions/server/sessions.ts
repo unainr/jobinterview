@@ -208,4 +208,36 @@ const app = new Hono()
       return c.json({ success: true, data: updated })
     
 	})
+.get("/:sessionId/recording", requireAuth, async (c) => {
+  const userId = c.get("userId")
+  const sessionId = c.req.param("sessionId")
+
+  const [session] = await db
+    .select()
+    .from(sessions)
+    .where(and(eq(sessions.id, sessionId), eq(sessions.userId, userId)))
+
+  if (!session) return c.json({ error: "Session not found" }, 404)
+  if (!session.vapiCallId) return c.json({ error: "No recording for this session" }, 404)
+
+  const vapiRes = await fetch(
+    `https://api.vapi.ai/call/${session.vapiCallId}/mono-recording`,
+    {
+      headers: { Authorization: `Bearer ${process.env.VAPI_PRIVATE_KEY}` },
+      redirect: "manual", // don't download the audio body — just read the redirect target
+    },
+  )
+
+  if (vapiRes.status >= 300 && vapiRes.status < 400) {
+    const signedUrl = vapiRes.headers.get("location")
+    if (!signedUrl) {
+      console.error("[recording] 3xx response with no Location header")
+      return c.json({ error: "Recording not available" }, 502)
+    }
+    return c.json({ url: signedUrl })
+  }
+
+  console.error("[recording] Unexpected Vapi response:", vapiRes.status)
+  return c.json({ error: "Recording not available" }, 502)
+})
 export default app;
